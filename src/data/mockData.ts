@@ -255,6 +255,18 @@ export const activities: Activity[] = [
 
 export const students: Student[] = [
   {
+    id: "2",
+    firstName: "Amine",
+    lastName: "El Alami",
+    email: "amine.elalami@campus.ma",
+    program: "Génie Informatique",
+    year: 4,
+    isBlocked: false,
+    clubs: ["1"],
+    activities: [],
+    createdAt: "2023-09-01",
+  },
+  {
     id: "3",
     firstName: "Salma",
     lastName: "Benjelloun",
