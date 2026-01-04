@@ -18,7 +18,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     
     // Simulate API delay
@@ -47,6 +47,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // 1. Admin Check
       if (email === 'admin@campus.ma') {
+        if (password !== 'admin123') {
+           return { success: false, error: 'auth.errors.invalid_credentials' };
+        }
         const adminUser: User = {
           id: 'admin_1',
           email,
@@ -63,6 +66,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const foundStudent = students.find(s => s.email.toLowerCase() === email.toLowerCase());
       
       if (foundStudent) {
+        // Special check for demo manager
+        if (foundStudent.email === 'amine.elalami@campus.ma') {
+            if (password !== 'manager123') {
+                return { success: false, error: 'auth.errors.invalid_credentials' };
+            }
+        } else {
+            // Generic student password
+            if (password !== 'student123') {
+                return { success: false, error: 'auth.errors.invalid_credentials' };
+            }
+        }
+
         // Determine role
         // Check if they manage any club
         const managedClubs = clubs.filter(c => c.managerId === foundStudent.id);

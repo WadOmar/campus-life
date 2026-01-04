@@ -49,7 +49,7 @@ const LoginPage = () => {
       return;
     }
 
-    const result = await login(email);
+    const result = await login(email, password);
     if (!result.success && result.error) {
       setErrors({ general: t(result.error) });
     } else {
@@ -174,16 +174,13 @@ const LoginPage = () => {
             </p>
             <div className="space-y-1.5 text-xs text-muted-foreground">
               <p>
-                <span className="font-medium">Admin:</span> admin@campus.ma
+                <span className="font-medium">Admin:</span> admin@campus.ma / admin123
               </p>
               <p>
-                <span className="font-medium">{t('roles.club_manager')}:</span> amine.elalami@campus.ma
+                <span className="font-medium">{t('roles.club_manager')}:</span> amine.elalami@campus.ma / manager123
               </p>
               <p>
-                <span className="font-medium">{t('roles.student')}:</span> salma.benjelloun@campus.ma
-              </p>
-              <p className="text-[10px] italic opacity-70 mt-2">
-                {language === 'fr' ? '(Mot de passe quelconque)' : '(Any password)'}
+                <span className="font-medium">{t('roles.student')}:</span> salma.benjelloun@campus.ma / student123
               </p>
             </div>
           </div>

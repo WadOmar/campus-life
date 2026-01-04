@@ -107,7 +107,7 @@ const DashboardPage = () => {
             <CardContent>
               <div className="text-2xl font-bold">{adminStats.totalStudents}</div>
               <p className="text-xs text-muted-foreground">
-                +{adminStats.monthlyGrowth.students}% {t('dashboard.stats.fromLastMonth')}
+                +{adminStats.monthlyGrowth.students}%
               </p>
             </CardContent>
           </Card>
@@ -123,7 +123,7 @@ const DashboardPage = () => {
             <CardContent>
               <div className="text-2xl font-bold">{adminStats.totalClubs}</div>
               <p className="text-xs text-muted-foreground">
-                +{adminStats.monthlyGrowth.clubs} {t('dashboard.stats.newClubs')}
+                +{adminStats.monthlyGrowth.clubs}
               </p>
             </CardContent>
           </Card>
@@ -139,7 +139,7 @@ const DashboardPage = () => {
             <CardContent>
               <div className="text-2xl font-bold">{adminStats.totalActivities}</div>
               <p className="text-xs text-muted-foreground">
-                +{adminStats.monthlyGrowth.activities} {t('dashboard.stats.thisWeek')}
+                +{adminStats.monthlyGrowth.activities}
               </p>
             </CardContent>
           </Card>
@@ -154,7 +154,7 @@ const DashboardPage = () => {
           <CardContent>
             <div className="text-2xl font-bold">{adminStats.totalRegistrations}</div>
             <p className="text-xs text-muted-foreground">
-              +{adminStats.monthlyGrowth.registrations}% {t('dashboard.stats.fromLastMonth')}
+              +{adminStats.monthlyGrowth.registrations}%
             </p>
           </CardContent>
         </Card>
