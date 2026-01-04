@@ -19,7 +19,7 @@ import {
   UserMinus,
   Edit2,
 } from 'lucide-react';
-import { activities, students } from '@/data/mockData';
+import { useActivity, useActivityParticipants } from '@/hooks/useActivities';
 import { toast } from 'sonner';
 
 const ActivityDetailPage = () => {
@@ -27,9 +27,10 @@ const ActivityDetailPage = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  const activity = activities.find((a) => a.id === id);
-  const participants = students.filter((s) => s.activities.includes(id || ''));
+  const { data: activity, isLoading } = useActivity(id || '');
+  const { data: participants } = useActivityParticipants(id || '');
 
+  if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>;
   if (!activity) {
     return (
       <MainLayout>
@@ -56,9 +57,11 @@ const ActivityDetailPage = () => {
     toast.success(`Désinscription de ${activity.name}`);
   };
 
+  const participantsList = participants || [];
+
   const handleExportCsv = () => {
     const headers = ['Prénom', 'Nom', 'Email', 'Filière'];
-    const rows = participants.map((p) => [
+    const rows = participantsList.map((p) => [
       p.firstName,
       p.lastName,
       p.email,
@@ -200,9 +203,9 @@ const ActivityDetailPage = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              {t('common.participants')} ({participants.length})
+              {t('common.participants')} ({participantsList.length})
             </CardTitle>
-            {isManager && participants.length > 0 && (
+            {isManager && participantsList.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleExportCsv} className="gap-2">
                 <Download className="h-4 w-4" />
                 {t('activities.exportCsv')}
@@ -210,11 +213,11 @@ const ActivityDetailPage = () => {
             )}
           </CardHeader>
           <CardContent>
-            {participants.length === 0 ? (
+            {participantsList.length === 0 ? (
               <p className="text-center text-muted-foreground">{t('common.noResults')}</p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {participants.map((participant) => (
+                {participantsList.map((participant) => (
                   <div
                     key={participant.id}
                     className="flex items-center gap-3 rounded-lg border border-border p-3"

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link } from 'react-router-dom';
 import {
   Users,
   Building2,
@@ -12,11 +13,10 @@ import {
   ClipboardList,
   CheckCircle,
   XCircle,
-  AlertTriangle,
   Settings,
   TrendingUp,
 } from 'lucide-react';
-import { clubs, activities, dashboardStats } from '@/data/mockData';
+import { clubs, dashboardStats } from '@/data/mockData';
 import { toast } from 'sonner';
 import {
   LineChart,
@@ -46,41 +46,6 @@ const AdminPage = () => {
     toast.success('Club supprimé');
   };
 
-  const stats = [
-    {
-      label: t('dashboard.students'),
-      value: dashboardStats.totalStudents.toLocaleString(),
-      icon: Users,
-      growth: dashboardStats.monthlyGrowth.students,
-      color: 'text-chart-1',
-      bgColor: 'bg-chart-1/10',
-    },
-    {
-      label: t('dashboard.clubs'),
-      value: dashboardStats.totalClubs.toString(),
-      icon: Building2,
-      growth: dashboardStats.monthlyGrowth.clubs,
-      color: 'text-chart-2',
-      bgColor: 'bg-chart-2/10',
-    },
-    {
-      label: t('dashboard.activities'),
-      value: dashboardStats.totalActivities.toString(),
-      icon: Calendar,
-      growth: dashboardStats.monthlyGrowth.activities,
-      color: 'text-chart-3',
-      bgColor: 'bg-chart-3/10',
-    },
-    {
-      label: t('dashboard.registrations'),
-      value: dashboardStats.totalRegistrations.toLocaleString(),
-      icon: ClipboardList,
-      growth: dashboardStats.monthlyGrowth.registrations,
-      color: 'text-chart-4',
-      bgColor: 'bg-chart-4/10',
-    },
-  ];
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -92,34 +57,107 @@ const AdminPage = () => {
 
         {/* Stats Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.label}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        {stat.label}
-                      </p>
-                      <p className="mt-2 text-3xl font-bold text-foreground">
-                        {stat.value}
-                      </p>
-                      <div className="mt-2 flex items-center gap-1 text-sm">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="font-medium text-primary">
-                          +{stat.growth}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className={`rounded-lg p-3 ${stat.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${stat.color}`} />
+          <Link to="/users">
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {t('dashboard.students')}
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {dashboardStats.totalStudents.toLocaleString()}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1 text-sm">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-primary">
+                        +{dashboardStats.monthlyGrowth.students}%
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <div className="rounded-lg p-3 bg-chart-1/10">
+                    <Users className="h-6 w-6 text-chart-1" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/clubs">
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {t('dashboard.clubs')}
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {dashboardStats.totalClubs.toString()}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1 text-sm">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-primary">
+                        +{dashboardStats.monthlyGrowth.clubs}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg p-3 bg-chart-2/10">
+                    <Building2 className="h-6 w-6 text-chart-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/activities">
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {t('dashboard.activities')}
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {dashboardStats.totalActivities.toString()}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1 text-sm">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-primary">
+                        +{dashboardStats.monthlyGrowth.activities}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg p-3 bg-chart-3/10">
+                    <Calendar className="h-6 w-6 text-chart-3" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('dashboard.registrations')}
+                  </p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">
+                    {dashboardStats.totalRegistrations.toLocaleString()}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1 text-sm">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-primary">
+                      +{dashboardStats.monthlyGrowth.registrations}%
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-lg p-3 bg-chart-4/10">
+                  <ClipboardList className="h-6 w-6 text-chart-4" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts */}

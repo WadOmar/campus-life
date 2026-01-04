@@ -9,16 +9,22 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Users, Calendar, Eye, CheckCircle, Clock } from 'lucide-react';
-import { clubs as mockClubs } from '@/data/mockData';
+import { useClubs } from '@/hooks/useClubs';
 import { toast } from 'sonner';
 
 const ClubsPage = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { data: clubs, isLoading, error } = useClubs();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'validated' | 'pending'>('all');
 
-  const filteredClubs = mockClubs.filter((club) => {
+  // Handle loading/error states in the UI
+  if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>; // Need to ensure common.loading exists or use simple text
+  if (error) return <div className="p-8 text-center text-red-500">Error loading clubs</div>;
+  if (!clubs) return null;
+
+  const filteredClubs = clubs.filter((club) => {
     const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter =
       filter === 'all' ||
@@ -46,7 +52,7 @@ const ClubsPage = () => {
             </p>
           </div>
           {canCreateClub && (
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => toast.info(t('common.featureComingSoon') || 'Fonctionnalité à venir')}>
               <Plus className="h-4 w-4" />
               {t('clubs.createClub')}
             </Button>

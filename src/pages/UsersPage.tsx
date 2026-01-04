@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Search,
   Eye,
   Lock,
   Unlock,
-  User,
   Users,
   ShieldCheck,
 } from 'lucide-react';
@@ -128,40 +135,27 @@ const UsersPage = () => {
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
-                      {t('common.name')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
-                      {t('common.email')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
-                      {t('profile.program')}
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">
-                      {t('common.status')}
-                    </th>
-                    <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">
-                      {t('common.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-[300px]">{t('common.name')}</TableHead>
+                    <TableHead>{t('common.email')}</TableHead>
+                    <TableHead>{t('profile.program')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredStudents.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
                         {t('common.noResults')}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     filteredStudents.map((student) => (
-                      <tr
-                        key={student.id}
-                        className="border-b border-border transition-colors hover:bg-muted/30"
-                      >
-                        <td className="px-6 py-4">
+                      <TableRow key={student.id}>
+                        <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar>
                               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -177,21 +171,21 @@ const UsersPage = () => {
                               </p>
                             </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
                           {student.email}
-                        </td>
-                        <td className="px-6 py-4">
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="outline">{student.program}</Badge>
-                        </td>
-                        <td className="px-6 py-4">
+                        </TableCell>
+                        <TableCell>
                           <Badge
                             variant={student.isBlocked ? 'destructive' : 'default'}
                           >
                             {student.isBlocked ? t('users.blocked') : t('users.active')}
                           </Badge>
-                        </td>
-                        <td className="px-6 py-4">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="sm" className="gap-1">
                               <Eye className="h-4 w-4" />
@@ -218,12 +212,12 @@ const UsersPage = () => {
                               )}
                             </Button>
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

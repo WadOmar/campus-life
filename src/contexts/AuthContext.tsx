@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { students, clubs } from "@/data/mockData";
 
 export type UserRole = 'student' | 'club_manager' | 'admin';
 
@@ -17,94 +18,84 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
-const mockUsers: Record<string, { password: string; user: User }> = {
-  'admin@campus.edu': {
-    password: 'admin123',
-    user: {
-      id: '1',
-      email: 'admin@campus.edu',
-      firstName: 'Marie',
-      lastName: 'Dupont',
-      role: 'admin',
-      avatar: undefined,
-    },
-  },
-  'manager@campus.edu': {
-    password: 'manager123',
-    user: {
-      id: '2',
-      email: 'manager@campus.edu',
-      firstName: 'Pierre',
-      lastName: 'Martin',
-      role: 'club_manager',
-      avatar: undefined,
-      clubs: ['1', '3'],
-    },
-  },
-  'student@campus.edu': {
-    password: 'student123',
-    user: {
-      id: '3',
-      email: 'student@campus.edu',
-      firstName: 'Sophie',
-      lastName: 'Bernard',
-      role: 'student',
-      avatar: undefined,
-      program: 'Informatique',
-      year: 3,
-      clubs: ['1'],
-    },
-  },
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored session
-    const storedUser = localStorage.getItem('campus_life_user');
+    // Check local storage for "session"
+    const storedUser = localStorage.getItem('mock_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const userData = mockUsers[email.toLowerCase()];
-    
-    if (!userData) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      // 1. Admin Check
+      if (email === 'admin@campus.ma') {
+        const adminUser: User = {
+          id: 'admin_1',
+          email,
+          firstName: 'Admin',
+          lastName: 'System',
+          role: 'admin'
+        };
+        setUser(adminUser);
+        localStorage.setItem('mock_user', JSON.stringify(adminUser));
+        return { success: true };
+      }
+
+      // 2. Student Check
+      const foundStudent = students.find(s => s.email.toLowerCase() === email.toLowerCase());
+      
+      if (foundStudent) {
+        // Determine role
+        // Check if they manage any club
+        const managedClubs = clubs.filter(c => c.managerId === foundStudent.id);
+        const role: UserRole = managedClubs.length > 0 ? 'club_manager' : 'student';
+
+        const userUser: User = {
+          id: foundStudent.id,
+          email: foundStudent.email,
+          firstName: foundStudent.firstName,
+          lastName: foundStudent.lastName,
+          role: role,
+          avatar: foundStudent.avatar,
+          program: foundStudent.program,
+          year: foundStudent.year,
+          clubs: foundStudent.clubs
+        };
+
+        setUser(userUser);
+        localStorage.setItem('mock_user', JSON.stringify(userUser));
+        return { success: true };
+      }
+
+      return { success: false, error: "Utilisateur non trouvé" };
+    } catch (err) {
+      return { success: false, error: "Erreur de connexion" };
+    } finally {
       setIsLoading(false);
-      return { success: false, error: 'auth.errors.invalid_credentials' };
     }
-    
-    if (userData.password !== password) {
-      setIsLoading(false);
-      return { success: false, error: 'auth.errors.invalid_credentials' };
-    }
-    
-    setUser(userData.user);
-    localStorage.setItem('campus_life_user', JSON.stringify(userData.user));
-    setIsLoading(false);
-    return { success: true };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('campus_life_user');
+    localStorage.removeItem('mock_user');
   };
 
   return (

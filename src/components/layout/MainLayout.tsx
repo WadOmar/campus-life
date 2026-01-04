@@ -114,6 +114,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             <DropdownMenuItem onClick={() => setLanguage('en')}>
               🇬🇧 English {language === 'en' && '✓'}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('ar')}>
+              🇦🇪 العربية {language === 'ar' && '✓'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('zgh')}>
+              🇲🇦 ⵜⴰⵎⴰⵣⵉⵖⵜ {language === 'zgh' && '✓'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
@@ -137,9 +143,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Building2 className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img src="/logo.png" alt="Campus Life" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bold text-sidebar-foreground">
                 Campus Life
               </span>
@@ -205,6 +209,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLanguage('en')}>
                   🇬🇧 English {language === 'en' && '✓'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('ar')}>
+                  🇦🇪 العربية {language === 'ar' && '✓'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('zgh')}>
+                  🇲🇦 ⵜⴰⵎⴰⵣⵉⵖⵜ {language === 'zgh' && '✓'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}

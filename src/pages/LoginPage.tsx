@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building2, Globe, Loader2, AlertCircle } from 'lucide-react';
+import { Building2, Globe, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -27,6 +27,7 @@ const LoginPage = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
 
   if (isAuthenticated && user) {
@@ -70,7 +71,7 @@ const LoginPage = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <Globe className="h-4 w-4" />
-              {language === 'fr' ? 'FR' : 'EN'}
+              {language === 'fr' ? 'FR' : (language === 'en' ? 'EN' : (language === 'ar' ? 'AR' : 'ZGH'))}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -80,14 +81,20 @@ const LoginPage = () => {
             <DropdownMenuItem onClick={() => setLanguage('en')}>
               🇬🇧 English {language === 'en' && '✓'}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('ar')}>
+              🇦🇪 العربية {language === 'ar' && '✓'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('zgh')}>
+              🇲🇦 ⵜⴰⵎⴰⵣⵉⵖⵜ {language === 'zgh' && '✓'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
       <Card className="relative z-10 w-full max-w-md shadow-xl">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-            <Building2 className="h-8 w-8 text-primary-foreground" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+            <img src="/logo.png" alt="Campus Life" className="h-12 w-12 object-contain" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">{t('auth.welcome')}</CardTitle>
@@ -108,7 +115,7 @@ const LoginPage = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="email@campus.edu"
+                placeholder={t('auth.email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={errors.email ? 'border-destructive' : ''}
@@ -121,15 +128,28 @@ const LoginPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="password">{t('auth.password')}</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={errors.password ? 'border-destructive' : ''}
-                autoComplete="current-password"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={t('auth.password')}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password}</p>
               )}

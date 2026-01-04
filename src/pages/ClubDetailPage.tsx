@@ -17,7 +17,7 @@ import {
   Clock,
   Edit2,
 } from 'lucide-react';
-import { clubs, activities, students } from '@/data/mockData';
+import { useClub, useClubActivities, useClubMembers } from '@/hooks/useClubs';
 import { toast } from 'sonner';
 
 const ClubDetailPage = () => {
@@ -25,9 +25,11 @@ const ClubDetailPage = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  const club = clubs.find((c) => c.id === id);
-  const clubActivities = activities.filter((a) => a.clubId === id);
-  const clubMembers = students.filter((s) => s.clubs.includes(id || ''));
+  const { data: club, isLoading: isLoadingClub } = useClub(id || '');
+  const { data: clubActivities } = useClubActivities(id || '');
+  const { data: clubMembers } = useClubMembers(id || '');
+
+  if (isLoadingClub) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
   if (!club) {
     return (
@@ -42,8 +44,13 @@ const ClubDetailPage = () => {
     );
   }
 
+  const activitiesList = clubActivities || [];
+  const membersList = clubMembers || [];
+
   const isManager = user?.id === club.managerId || user?.role === 'admin';
-  const isMember = user?.clubs?.includes(club.id);
+  // isMember logic needs to check the members list now, as user.clubs string list might not be updated realtime or might be derived differently.
+  // Or check if user id is in membersList.
+  const isMember = membersList.some(m => m.id === user?.id);
 
   const handleJoin = () => {
     toast.success(`Demande d'adhésion envoyée à ${club.name}`);
@@ -160,24 +167,24 @@ const ClubDetailPage = () => {
           <TabsList>
             <TabsTrigger value="activities" className="gap-2">
               <Calendar className="h-4 w-4" />
-              {t('activities.title')} ({clubActivities.length})
+              {t('activities.title')} ({activitiesList.length})
             </TabsTrigger>
             <TabsTrigger value="members" className="gap-2">
               <Users className="h-4 w-4" />
-              {t('common.members')} ({clubMembers.length})
+              {t('common.members')} ({membersList.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="activities" className="mt-4">
             <div className="grid gap-4 md:grid-cols-2">
-              {clubActivities.length === 0 ? (
+              {activitiesList.length === 0 ? (
                 <Card className="col-span-full">
                   <CardContent className="p-8 text-center text-muted-foreground">
                     {t('activities.noActivities')}
                   </CardContent>
                 </Card>
               ) : (
-                clubActivities.map((activity) => (
+                activitiesList.map((activity) => (
                   <Card key={activity.id}>
                     <CardHeader>
                       <CardTitle className="text-lg">{activity.name}</CardTitle>
@@ -203,14 +210,14 @@ const ClubDetailPage = () => {
 
           <TabsContent value="members" className="mt-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {clubMembers.length === 0 ? (
+              {membersList.length === 0 ? (
                 <Card className="col-span-full">
                   <CardContent className="p-8 text-center text-muted-foreground">
                     {t('common.noResults')}
                   </CardContent>
                 </Card>
               ) : (
-                clubMembers.map((member) => (
+                membersList.map((member) => (
                   <Card key={member.id}>
                     <CardContent className="flex items-center gap-4 p-4">
                       <Avatar>

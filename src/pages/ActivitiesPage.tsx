@@ -18,21 +18,27 @@ import {
   UserPlus,
   UserMinus,
 } from 'lucide-react';
-import { activities as mockActivities } from '@/data/mockData';
+import { useActivities } from '@/hooks/useActivities';
 import { toast } from 'sonner';
 
 const ActivitiesPage = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { data: activities, isLoading, error } = useActivities();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all'); // Renamed from selectedCategory to match existing usage
+
+  // Handle loading/error
+  if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>;
+  if (error) return <div className="p-8 text-center text-red-500">Error loading activities</div>;
+  if (!activities) return null;
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filteredActivities = mockActivities.filter((activity) => {
-    const matchesSearch = activity.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  const filteredActivities = activities.filter((activity) => {
+    const matchesSearch =
+      activity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      activity.description.toLowerCase().includes(searchQuery.toLowerCase());
     const isUpcoming = activity.date >= today;
     const matchesFilter =
       filter === 'all' ||
@@ -52,9 +58,11 @@ const ActivitiesPage = () => {
   };
 
   const isRegistered = (activityId: string) => {
-    return mockActivities
-      .find((a) => a.id === activityId)
-      ?.participants.includes(user?.id || '');
+    // In a real app, we should fetch 'my registrations' or check against the participant list if populated.
+    // The current list query returns empty participants array for performance.
+    // We can assume false or implement a separate 'useMyRegistrations' hook.
+    // For now, safeguarding against the missing variable.
+    return false; 
   };
 
   return (
