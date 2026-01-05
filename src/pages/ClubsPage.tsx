@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Users, Calendar, Eye, CheckCircle, Clock } from 'lucide-react';
 import { useClubs } from '@/hooks/useClubs';
 import { toast } from 'sonner';
+import CreateClubDialog from '@/components/clubs/CreateClubDialog';
 
 const ClubsPage = () => {
   const { user } = useAuth();
@@ -52,10 +53,12 @@ const ClubsPage = () => {
             </p>
           </div>
           {canCreateClub && (
-            <Button className="gap-2" onClick={() => toast.info(t('common.featureComingSoon') || 'Fonctionnalité à venir')}>
-              <Plus className="h-4 w-4" />
-              {t('clubs.createClub')}
-            </Button>
+            <CreateClubDialog>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t('clubs.createClub')}
+              </Button>
+            </CreateClubDialog>
           )}
         </div>
 

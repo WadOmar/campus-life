@@ -56,7 +56,19 @@ const DashboardPage = () => {
         myClubs,
         totalMembers,
         totalActivities,
-        clubsCount: myClubs.length
+        clubsCount: myClubs.length,
+        membersByClub: myClubs.map(c => ({
+          name: c.name,
+          count: c.memberCount
+        })),
+        participantsByActivity: (await import('@/data/mockData').then(m => m.activities))
+          .filter(a => myClubs.some(c => c.id === a.clubId))
+          .sort((a, b) => b.currentParticipants - a.currentParticipants)
+          .slice(0, 5)
+          .map(a => ({
+            name: a.name,
+            participants: a.currentParticipants
+          }))
       };
     },
     enabled: user?.role === 'club_manager'
@@ -71,19 +83,30 @@ const DashboardPage = () => {
       // Calculate simple stats from mock data
       // In mock data, students have 'clubs' array and 'activities' array
       
-      const me = React.useMemo(() => {
-          // In a real mock usage, we might re-find the student to get latest arrays, 
-          // or just rely on what's in 'user' context if it's rich enough. 
-          // But our Auth 'user' might be light.
-          // Let's rely on finding them in the 'students' array for the full arrays.
-           return (import('@/data/mockData').then(m => m.students.find(s => s.id === user.id)));
-      }, [user.id]);
+      const me = await import('@/data/mockData').then(m => m.students.find(s => s.id === user.id));
       
-      const myProfile = await me;
+      if (!me) return null;
+
+      const myActivities = await import('@/data/mockData').then(m => 
+        m.activities.filter(a => me.activities.includes(a.id))
+      );
+
+      // Calculate activities by category for the pie chart
+      const categoryCounts: Record<string, number> = {};
+      myActivities.forEach(activity => {
+        categoryCounts[activity.category] = (categoryCounts[activity.category] || 0) + 1;
+      });
+
+      const activitiesByCategory = Object.entries(categoryCounts).map(([name, count], index) => ({
+        name,
+        count,
+        color: `hsl(var(--chart-${(index % 5) + 1}))`
+      }));
       
       return {
-        activitiesJoined: myProfile?.activities.length || (user.clubs?.length || 0), // Fallback
-        clubsJoined: myProfile?.clubs.length || 0
+        activitiesJoined: me.activities.length,
+        clubsJoined: me.clubs.length,
+        activitiesByCategory
       };
     },
     enabled: user?.role === 'student'
@@ -230,73 +253,176 @@ const DashboardPage = () => {
   );
 
   const renderManagerDashboard = () => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('dashboard.clubs')}</CardTitle>
-          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{managerStats?.clubsCount || 0}</div>
-          <p className="text-xs text-muted-foreground">Clubs gérés</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('common.members')}</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{managerStats?.totalMembers || 0}</div>
-          <p className="text-xs text-muted-foreground">Total membres inscrits</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('nav.activities')}</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{managerStats?.totalActivities || 0}</div>
-          <p className="text-xs text-muted-foreground">Activités organisées</p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('dashboard.clubs')}</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{managerStats?.clubsCount || 0}</div>
+            <p className="text-xs text-muted-foreground">Clubs gérés</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('common.members')}</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{managerStats?.totalMembers || 0}</div>
+            <p className="text-xs text-muted-foreground">Total membres inscrits</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('nav.activities')}</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{managerStats?.totalActivities || 0}</div>
+            <p className="text-xs text-muted-foreground">Activités organisées</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Manager Charts */}
+      {managerStats && (
+        <div className="grid gap-6 lg:grid-cols-2 mt-6">
+          {/* Members per Club */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Membres par Club</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={managerStats.membersByClub}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                      }}
+                      cursor={{ fill: 'hsl(var(--muted))' }}
+                    />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Activities by Participants */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Top Activités (Participants)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={managerStats.participantsByActivity} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                    <XAxis type="number" className="text-xs" />
+                    <YAxis dataKey="name" type="category" width={100} className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                      }}
+                      cursor={{ fill: 'hsl(var(--muted))' }}
+                    />
+                    <Bar dataKey="participants" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
   );
 
   const renderStudentDashboard = () => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('nav.clubs')}</CardTitle>
-          <Layout className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{studentStats?.clubsJoined || 0}</div>
-          <p className="text-xs text-muted-foreground">Clubs rejoints</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('nav.activities')}</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{studentStats?.activitiesJoined || 0}</div>
-          <p className="text-xs text-muted-foreground">Activités participées</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Succès</CardTitle>
-          <Award className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">3</div>
-          <p className="text-xs text-muted-foreground">Badges obtenus</p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('nav.clubs')}</CardTitle>
+            <Layout className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{studentStats?.clubsJoined || 0}</div>
+            <p className="text-xs text-muted-foreground">Clubs rejoints</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('nav.activities')}</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{studentStats?.activitiesJoined || 0}</div>
+            <p className="text-xs text-muted-foreground">Activités participées</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Succès</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">Badges obtenus</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Student Charts */}
+      {studentStats && (
+        <div className="grid gap-6 lg:grid-cols-2 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Mes Préférences (Activités)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={studentStats.activitiesByCategory}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="count"
+                      label={({ name, percent }) =>
+                        `${name} ${(percent * 100).toFixed(0)}%`
+                      }
+                    >
+                      {studentStats.activitiesByCategory.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Recent Upcoming Activities in Charts Row as Placeholder or another chart? 
+              For now let's just keep the pie chart and maybe another info block or just one chart as requested 
+          */}
+        </div>
+      )}
+    </>
   );
 
   return (

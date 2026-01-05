@@ -16,9 +16,11 @@ import {
   CheckCircle,
   Clock,
   Edit2,
+  Plus,
 } from 'lucide-react';
 import { useClub, useClubActivities, useClubMembers } from '@/hooks/useClubs';
 import { toast } from 'sonner';
+import CreateActivityDialog from '@/components/clubs/CreateActivityDialog';
 
 const ClubDetailPage = () => {
   const { id } = useParams();
@@ -108,10 +110,18 @@ const ClubDetailPage = () => {
               </div>
               <div className="flex gap-2">
                 {isManager && (
-                  <Button variant="outline" className="gap-2">
-                    <Edit2 className="h-4 w-4" />
-                    {t('common.edit')}
-                  </Button>
+                  <>
+                    <CreateActivityDialog clubId={club.id} clubName={club.name}>
+                      <Button className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        {t('activities.create') || 'Créer une activité'}
+                      </Button>
+                    </CreateActivityDialog>
+                    <Button variant="outline" className="gap-2">
+                      <Edit2 className="h-4 w-4" />
+                      {t('common.edit')}
+                    </Button>
+                  </>
                 )}
                 {user?.role === 'student' && !isMember && club.isValidated && (
                   <Button onClick={handleJoin}>{t('clubs.joinClub')}</Button>
